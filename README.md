@@ -8,3 +8,6 @@ pinned: false
 ---
 
 Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+
+George Soros
+의 투자법칙.
