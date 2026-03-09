@@ -1,4 +1,4 @@
-pip install yfinance pandas matplotlib seaborn ta lightgbm scikit-learn
+pip install yfinance pandas matplotlib seaborn ta lightgbm scikit-learn pandas_datareader
 
 ---
 title: Qwen3 4b Inst Q4 K M Hf Server
