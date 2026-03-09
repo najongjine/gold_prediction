@@ -4,13 +4,18 @@ import datetime
 import matplotlib.pyplot as plt
 import platform  # OS 확인을 위한 모듈 추가
 
-# 1. 조회할 기간 설정 (예: 2010년 1월 1일부터 현재까지)
-start = datetime.datetime(2010, 1, 1)
+# 1. 조회할 기간 설정: 오늘 기준 10년 전부터 현재까지
 end = datetime.datetime.today()
+try:
+    start = end.replace(year=end.year - 10)
+except ValueError:
+    # 오늘이 2월 29일(윤일)일 경우 10년 전 날짜를 2월 28일로 처리
+    start = end.replace(year=end.year - 10, day=28)
 
 # 2. FRED에서 데이터 불러오기
 # 티커 'IPG334S': Industrial Production: Manufacturing: Durable Goods: Computer and Electronic Product
 try:
+    print(f"FRED 데이터 다운로드 중... ({start.strftime('%Y-%m-%d')} ~ {end.strftime('%Y-%m-%d')})")
     tech_production = web.DataReader('IPG334S', 'fred', start, end)
     
     # 데이터 확인
@@ -28,7 +33,7 @@ try:
         plt.figure(figsize=(12, 6))
         plt.plot(tech_production.index, tech_production['IPG334S'], label='Computer & Electronic Product Index', color='dodgerblue')
         
-        plt.title('Industrial Production: Computer and Electronic Product (FRED: IPG334S)')
+        plt.title('Industrial Production: Computer & Electronic Product (Last 10 Years)')
         plt.xlabel('Date')
         plt.ylabel('Index (2017=100)') 
         plt.grid(True, linestyle='--', alpha=0.6)
