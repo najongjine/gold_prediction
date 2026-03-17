@@ -1,4 +1,9 @@
-
+"""
+미국 달러 가치 (달러 인덱스): 달러가 싸지면 금값이 오름
+미국 채권 금리: 이자를 안 주는 금 특성상, 금리가 낮아지면 금값이 오름
+인플레이션 수치 (CPI 등): 물가가 오르면 방어 수단으로 금을 삼
+전쟁이나 경제위기 (VIX 공포 지수 등)
+"""
 import yfinance as yf
 import pandas as pd
 import numpy as np
@@ -18,28 +23,30 @@ ten_years_ago = today - relativedelta(years=10)
 start_date = ten_years_ago.strftime('%Y-%m-%d')
 end_date = today.strftime('%Y-%m-%d')
 
-print(f"금 가격 데이터를 다운로드 중입니다... ({start_date} ~ {end_date})")
+print(f"금 가격 및 거시경제 지표 데이터를 다운로드 중입니다... ({start_date} ~ {end_date})")
 
-# period='max' 대신 start와 end 파라미터를 사용합니다.
-raw_df = yf.download('GC=F', start=start_date, end=end_date)
+# 금(GC=F), 달러 인덱스(DX=F), 10년물 국채 금리(^TNX), VIX 공포지수(^VIX)
+tickers = ['GC=F', 'DX=F', '^TNX', '^VIX']
+raw_df = yf.download(tickers, start=start_date, end=end_date)
 
 # 최신 yfinance 버전에 맞춘 종가('Close') 추출 로직
 close_data = raw_df['Close']
 
-# 만약 데이터가 1차원(Series)이라면 2차원으로 변환
-if isinstance(close_data, pd.Series):
-    df = close_data.to_frame(name='Close')
-# 이미 2차원(DataFrame)이라면 그대로 복사 후 컬럼명만 깔끔하게 'Close'로 통일
-else:
-    df = close_data.copy()
-    df.columns = ['Close'] 
+# 컬럼 이름 변경 (알아보기 쉽게)
+df = close_data.rename(columns={
+    'GC=F': 'Close',             # 금 종가 (메인 타겟)
+    'DX=F': 'Dollar_Index',      # 달러 인덱스 선물
+    '^TNX': 'US_10Y_Treasury',   # 미국 10년물 국채 금리
+    '^VIX': 'VIX_Index'          # VIX 공포지수
+})
 
 print(f"총 {len(df)}일치의 데이터를 성공적으로 불러왔습니다.")
 
 # ==========================================
 # 1. 결측치 채우기 & 2. 이상치 처리
 # ==========================================
-df['Close'] = df['Close'].ffill()
+# 거래일이 서로 달라 발생한 결측치는 이전 가격으로 채움 (ffill)
+df = df.ffill().bfill() # bfill은 맨 처음 시작 데이터 결측 방지
 
 lower_bound = df['Close'].quantile(0.01)
 upper_bound = df['Close'].quantile(0.99)
