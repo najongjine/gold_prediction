@@ -2,6 +2,8 @@ py -3.10 -m uv venv venv
 
 .\venv\Scripts\Activate.ps1
 
+uv pip install -r requirements.txt
+
 윈도우에서 CUDA 버전 확인 방법
 nvcc --version
 
