@@ -273,6 +273,36 @@ def train_and_evaluate_model(df_final):
     
     return model
 
+def predict_future_trend(model, df_features, cols_to_drop):
+    """
+    기획서 7단계: 실제 미래 예측 (Inference)
+    학습된 모델에 가장 최근(오늘)의 데이터를 넣어 향후 60일의 금 가격 추세를 예측합니다.
+    """
+    print("\n--- [🚀 실제 미래 예측 수행] ---")
+    
+    # 1. 가장 최근 날짜의 피처 데이터(마지막 행) 추출
+    latest_data = df_features.iloc[[-1]].copy()
+    latest_date = latest_data.index[0].strftime('%Y-%m-%d')
+    
+    # 2. 모델 학습 때와 동일한 조건이 되도록 원본 절대 가격 컬럼 삭제
+    latest_features = latest_data.drop(columns=cols_to_drop, errors='ignore')
+    
+    # 3. 예측 수행
+    predicted_return = model.predict(latest_features)[0]
+    
+    # 4. 결과 출력
+    print(f"데이터 기준일 (가장 최근): {latest_date}")
+    print(f"📈 향후 60일 예상 추세 수익률: {predicted_return:.2f}%")
+    
+    print("-" * 30)
+    if predicted_return > 0:
+        print(f"💡 AI 전망: 기준일로부터 약 60일 동안 금 가격 추세는 상승세(+{predicted_return:.2f}%)를 보일 것으로 예상됩니다.")
+    else:
+        print(f"💡 AI 전망: 기준일로부터 약 60일 동안 금 가격 추세는 하락세({predicted_return:.2f}%)를 보일 것으로 예상됩니다.")
+    print("-" * 30)
+        
+    return predicted_return, latest_date
+
 if __name__ == "__main__":
     print("메인 프로세스 시작...")
     # 1. 데이터 수집
@@ -298,6 +328,9 @@ if __name__ == "__main__":
         
         # 6. 모델 학습 및 평가
         model = train_and_evaluate_model(df_final)
+
+        # 🌟 7. 실제 미래 예측 (새로 추가된 부분!)
+        predict_future_trend(model, df_features, cols_to_drop)
         
         print("\n모든 기획 단계 구현 및 검증이 완료되었습니다.")
     else:
